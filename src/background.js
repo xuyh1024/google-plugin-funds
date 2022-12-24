@@ -96,7 +96,7 @@ var formatNum = val => {
   if (absNum < 10) {
     text =  arrow(num) + absNum.toFixed(2);
   } else if (absNum < 100) {
-    text =  arrow(num) + '1.2k';
+    text =  arrow(num) + absNum.toFixed(0);
   } else if (absNum < 1000) {
     text =  arrow(num) + absNum.toFixed(0);
   } else if (absNum < 10000) {
