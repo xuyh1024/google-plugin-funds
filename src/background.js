@@ -55,27 +55,6 @@ var checkHoliday = date => {
   return check;
 };
 
-var toNum = a => {
-  var a = a.toString();
-  var c = a.split(".");
-  var num_place = ["", "0", "00", "000", "0000"],
-    r = num_place.reverse();
-  for (var i = 0; i < c.length; i++) {
-    var len = c[i].length;
-    c[i] = r[len] + c[i];
-  }
-  var res = c.join("");
-  return res;
-};
-
-var cpr_version = (a, b) => {
-  var _a = toNum(a),
-    _b = toNum(b);
-  if (_a == _b) console.log("版本号相同！版本号为：" + a);
-  if (_a > _b) console.log("版本号" + a + "是新版本！");
-  if (_a < _b) console.log("版本号" + b + "是新版本！");
-};
-
 var isDuringDate = () => {
 
   //时区转换为东8区
@@ -107,23 +86,31 @@ var isDuringDate = () => {
   }
 };
 
+var arrow = val => {
+  return val >= 0 ? '+' : '-'
+}
 var formatNum = val => {
   let num = parseFloat(val);
   let absNum = Math.abs(num);
+  let text = ''
   if (absNum < 10) {
-    return num.toFixed(2);
+    text =  arrow(num) + absNum.toFixed(2);
   } else if (absNum < 100) {
-    return num.toFixed(1);
+    text =  arrow(num) + '1.2k';
   } else if (absNum < 1000) {
-    return num.toFixed(0);
+    text =  arrow(num) + absNum.toFixed(0);
   } else if (absNum < 10000) {
-    return (num / 1000).toFixed(1) + 'k';
+    text =  arrow(num) + (absNum / 1000).toFixed(1) + 'k';
   } else if (absNum < 1000000) {
-    return (num / 1000).toFixed(0) + 'k';
+    text =  arrow(num) + (absNum / 1000).toFixed(0) + 'k';
   } else if (absNum < 10000000) {
-    return (num / 1000000).toFixed(1) + 'M';
+    text =  arrow(num) + (absNum / 1000000).toFixed(1) + 'M';
   } else {
-    return (num / 1000000).toFixed(0) + 'M';
+    text =  arrow(num) + (absNum / 1000000).toFixed(0) + 'M';
+  }
+  return {
+    text,
+    color:num >= 0 ? '#dc2525' :'#0e8203'
   }
 }
 
@@ -142,14 +129,7 @@ var setBadge = (fundcode, Realtime, type) => {
       chrome.browserAction.setBadgeText({
         text: text
       });
-      let color = Realtime ?
-        num >= 0 ?
-        "#F56C6C" :
-        "#4eb61b" :
-        "#4285f4";
-      chrome.browserAction.setBadgeBackgroundColor({
-        color: color
-      });
+      chrome.browserAction.setBadgeBackgroundColor({ color: '#ffffff' });
     });
   } else {
     if (type == 1) {
@@ -206,18 +186,7 @@ var setBadge = (fundcode, Realtime, type) => {
           }
 
 
-          if (BadgeType == 1) {
-            textStr = data.gszzl;
-            sumNum = textStr;
-          } else {
-            if (num != 0) {
-              sumNum = sum;
-              textStr = formatNum(sum);
-            } else {
-              sumNum = "0";
-              textStr = "0";
-            }
-          }
+          textStr = formatNum(sum);
 
         } else {
           res.data.Datas.forEach((val) => {
@@ -240,34 +209,13 @@ var setBadge = (fundcode, Realtime, type) => {
             allGains += sum;
 
           });
-          if (BadgeType == 1) {
-            if (allAmount == 0 || allGains == 0) {
-              sumNum = "0"
-              textStr = "0"
-            } else {
-              textStr = (100 * allGains / allAmount).toFixed(2);
-              sumNum = textStr
-            }
-
-          } else {
-            sumNum = allGains;
-            textStr = formatNum(allGains);
-          }
+          textStr = formatNum(allGains);
         }
 
-
         chrome.browserAction.setBadgeText({
-          text: textStr
+          text: textStr.text
         });
-        let color = Realtime ?
-          sumNum >= 0 ?
-          "#F56C6C" :
-          "#4eb61b" :
-          "#4285f4";
-        chrome.browserAction.setBadgeBackgroundColor({
-          color: color
-        });
-
+        chrome.browserAction.setBadgeBackgroundColor({ color: textStr.color });
       })
       .catch((error) => {
 
@@ -291,10 +239,6 @@ var startInterval = (RealtimeFundcode, type = 1) => {
   Interval = setInterval(() => {
     if (isDuringDate()) {
       setBadge(RealtimeFundcode, true, type);
-    } else {
-      chrome.browserAction.setBadgeBackgroundColor({
-        color: "#4285f4"
-      });
     }
   }, time);
 };
@@ -432,31 +376,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     });
     let textStr = null;
-    if (BadgeType == 1) {
-      if (allAmount == 0 || allGains == 0) {
-        textStr = "0"
-        sumNum = "0"
-      } else {
-        textStr = (100 * allGains / allAmount).toFixed(2);
-        sumNum = textStr
-      }
-
-    } else {
-      textStr = formatNum(allGains);
-      sumNum = allGains;
-    }
-
+    textStr = formatNum(allGains);
     chrome.browserAction.setBadgeText({
-      text: textStr
+      text: textStr.text
     });
-    let color = isDuringDate() ?
-      sumNum >= 0 ?
-      "#F56C6C" :
-      "#4eb61b" :
-      "#4285f4";
-    chrome.browserAction.setBadgeBackgroundColor({
-      color: color
-    });
+    chrome.browserAction.setBadgeBackgroundColor({ color: textStr.color });
   }
   if (request.type == "endInterval") {
     endInterval();
@@ -480,24 +404,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   if (request.type == "refreshBadge") {
     let textstr = null;
-    let num = 0;
-    if (BadgeType == 1) {
-      textstr = request.data.gszzl;
-      num = request.data.gszzl;
-    } else {
-      num = request.data.gains;
-      textstr = formatNum(request.data.gains);
-    }
+    textstr = formatNum(request.data.gains);
     chrome.browserAction.setBadgeText({
-      text: textstr
+      text: textstr.text
     });
-    let color = isDuringDate() ?
-      num >= 0 ?
-      "#F56C6C" :
-      "#4eb61b" :
-      "#4285f4";
-    chrome.browserAction.setBadgeBackgroundColor({
-      color: color
-    });
+    chrome.browserAction.setBadgeBackgroundColor({ color: textstr.color });
   }
 });
+
+chrome.webRequest.onBeforeSendHeaders.addListener(
+    function(details) {
+      details.requestHeaders.push({name: 'User-Agent', value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/94.0.4606.71'});
+      return {requestHeaders: details.requestHeaders};
+    },
+    {urls: ['<all_urls>']},
+    ['blocking', 'requestHeaders']
+);

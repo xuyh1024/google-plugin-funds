@@ -32,6 +32,8 @@
   "permissions": [
     "storage",
     "contextMenus",
+    "webRequest",
+    "webRequestBlocking",
     "https://*.eastmoney.com/*"
   ]
 }

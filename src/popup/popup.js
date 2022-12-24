@@ -1,6 +1,11 @@
 import Vue from "vue";
 import App from "./App";
 import axios from "axios";
+import echarts  from "echarts/lib/echarts";
+import {customed,dark} from '../common/js/theme'
+import "echarts/lib/chart/line";
+import "echarts/lib/component/tooltip";
+import "echarts/lib/component/legend";
 import {
   Select,
   Option,
@@ -16,7 +21,11 @@ import {
   Icon
 } from 'element-ui';
 
+echarts.registerTheme('customed',customed)
+echarts.registerTheme('dark',dark)
+
 Vue.prototype.$axios = axios;
+Vue.prototype.$echarts = echarts;
 Vue.prototype.$ELEMENT = { size: 'mini' };
 Vue.use(Loading.directive);
 Vue.prototype.$loading = Loading.service;

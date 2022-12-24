@@ -170,122 +170,17 @@
             tips：插件本身支持跟随浏览器账号自动同步，若想手动同步可使用导入导出功能，同步小程序数据可以选择导入导出文本，Excel导入时不用填写基金名称。
           </p>
         </li>
-        <li>
-          <div class="list-title">请作者喝杯咖啡</div>
-          <p style="line-height:34px">
-            开源不易，本插件是一个完全开源的项目，也衍生出许多同类产品，您的支持是对作者最大的鼓励。如果你觉得此插件对你有所帮助，或者想要支持一下我<input
-              class="btn primary"
-              type="button"
-              title="φ(>ω<*)"
-              value="点击打赏"
-              @click="reward"
-            />
-          </p>
-          <p style="line-height:34px">
-            或者你也可以帮忙点一个star，点击查看源码→
-            <span
-              title="点击查看项目源码"
-              class="black icon-btn-row"
-              @click="openGithub"
-            >
-              <svg
-                class="githubIcon"
-                height="24"
-                viewBox="0 0 16 16"
-                version="1.1"
-                width="24"
-                aria-hidden="true"
-              >
-                <path
-                  d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
-                />
-              </svg>
-              <input
-                class="btn black githubText"
-                type="button"
-                value="源代码"
-              />
-            </span>
-          </p>
-          <reward :top="50" ref="reward"></reward>
-        </li>
-        <li>
-          <div class="list-title">
-            节假日信息
-            <button
-              :disabled="disabled"
-              @click="getHoliday"
-              title="点击更新节假日信息"
-              class="btn"
-            >
-              更新
-            </button>
-            <span class="loading" v-if="disabled">更新中。。。</span>
-          </div>
-          <p>
-            <span v-if="holiday">
-              当前节假日版本：v{{
-                holiday.version
-              }}&nbsp;&nbsp;&nbsp;&nbsp;最后节假日日期：{{ holiday.lastDate }}
-            </span>
-          </p>
-          <p>
-            tips：更新节假日信息，可以在节假日暂停更新估值，节假日信息会不定时更新。
-            <a href="#" @click="openHoliday">查看最新版</a>
-          </p>
-        </li>
-        <li>
-          <div class="list-title">
-            关于插件
-          </div>
-          <p style="line-height:34px">
-            当前插件版本：v{{ version }}
-            <input
-              class="btn"
-              type="button"
-              value="更新日志"
-              @click="changelog"
-            />
-            <input
-              class="btn"
-              type="button"
-              value="插件主页"
-              @click="openHomePage"
-            />
-          </p>
-          <p style="line-height:34px">
-            电报群：https://t.me/choose_funds_chat
-            <input class="btn" type="button" value="点击跳转" @click="openTG" />
-          </p>
-          <change-log
-            @close="closeChangelog"
-            :darkMode="darkMode"
-            ref="changelog"
-            :top="20"
-          ></change-log>
-          <config-box
-            @success="successInput"
-            :darkMode="darkMode"
-            ref="configBox"
-            :top="40"
-          >
-          </config-box>
-        </li>
       </ul>
     </div>
   </div>
 </template>
 
 <script>
-import reward from "../common/reward";
-import changeLog from "../common/changeLog";
 import configBox from "../common/configBox";
 const { version } = require("../../package.json");
 import { export_json_to_excel } from "../common/js/vendor/Export2Excel";
 export default {
   components: {
-    reward,
-    changeLog,
     configBox,
   },
   data() {
@@ -304,7 +199,6 @@ export default {
       showBadge: 1,
       BadgeContent: 1,
       BadgeType: 1,
-      changelogShadow: false,
       normalFontSize: false,
       loadingFundList: false,
       version,
@@ -414,13 +308,6 @@ export default {
       fileReader.readAsBinaryString(files[0]);
     },
 
-    changelog() {
-      this.changelogShadow = true;
-      this.$refs.changelog.init();
-    },
-    closeChangelog() {
-      this.changelogShadow = false;
-    },
     changeOption(val, type, sendMessage) {
       chrome.storage.sync.set(
         {
@@ -572,21 +459,6 @@ export default {
           }
         );
       });
-    },
-    openHoliday() {
-      window.open("https://x2rr.github.io/funds/holiday.json");
-    },
-    openGithub() {
-      window.open("https://github.com/x2rr/funds");
-    },
-    openTG() {
-      window.open("https://t.me/choose_funds_chat");
-    },
-    openHomePage() {
-      window.open("http://rabt.gitee.io/funds/docs/dist/index.html");
-    },
-    reward(data) {
-      this.$refs.reward.init();
     },
     changeDarkMode() {
       chrome.storage.sync.set({
@@ -751,32 +623,32 @@ export default {
     border-bottom: 1px solid rgba($color: #ffffff, $alpha: 0.38);
   }
 
-  /deep/ .el-switch__label.is-active {
+  ::v-deep .el-switch__label.is-active {
     color: rgba($color: #409eff, $alpha: 0.87);
   }
-  /deep/ .el-switch__label {
+  ::v-deep .el-switch__label {
     color: rgba($color: #ffffff, $alpha: 0.6);
   }
 
-  /deep/ .el-switch.is-checked .el-switch__core {
+  ::v-deep .el-switch.is-checked .el-switch__core {
     border: 1px solid rgba($color: #409eff, $alpha: 0.6);
     background-color: rgba($color: #409eff, $alpha: 0.6);
   }
 
-  /deep/ .el-radio__input.is-checked + .el-radio__label {
+  ::v-deep .el-radio__input.is-checked + .el-radio__label {
     color: rgba($color: #409eff, $alpha: 0.87);
   }
-  /deep/ .el-radio__input.is-checked .el-radio__inner {
+  ::v-deep .el-radio__input.is-checked .el-radio__inner {
     background-color: rgba($color: #409eff, $alpha: 0.6);
     border: 1px solid rgba($color: #409eff, $alpha: 0.6);
   }
-  /deep/ .el-radio.is-bordered.is-checked {
+  ::v-deep .el-radio.is-bordered.is-checked {
     border: 1px solid rgba($color: #409eff, $alpha: 0.6);
   }
-  /deep/ .el-radio.is-bordered {
+  ::v-deep .el-radio.is-bordered {
     border: 1px solid rgba($color: #ffffff, $alpha: 0.6);
   }
-  /deep/ .el-radio {
+  ::v-deep .el-radio {
     color: rgba($color: #ffffff, $alpha: 0.6);
   }
 }

@@ -21,16 +21,6 @@
 </template>
 
 <script>
-let echarts = require("echarts/lib/echarts");
-
-import "./js/customed.js";
-import "./js/dark.js";
-
-require("echarts/lib/chart/line");
-
-require("echarts/lib/component/tooltip");
-require("echarts/lib/component/legend");
-
 export default {
   name: "chatrs",
   props: {
@@ -83,7 +73,7 @@ export default {
   methods: {
     init() {
       this.chartEL = this.$refs.mainCharts;
-      this.myChart = echarts.init(
+      this.myChart = this.$echarts.init(
         this.chartEL,
         this.darkMode ? "dark" : "customed"
       );

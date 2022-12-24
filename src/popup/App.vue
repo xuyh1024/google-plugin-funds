@@ -289,68 +289,6 @@
             </tr>
           </tbody>
         </table>
-
-        <!-- <table :class="tableHeight" class="detailTable">
-          <thead>
-            <tr>
-              <th class="align-left">
-                <div>基金名称</div>
-                <p>基金编码</p>
-              </th>
-              <th>
-                <div>持有收益率</div>
-                <p>持有收益</p>
-              </th>
-              <th>
-                <div>估算涨幅</div>
-                <p>估算收益</p>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(el, index) in dataList"
-              :key="el.fundcode"
-              :draggable="isEdit"
-              :class="drag"
-              @dragstart="handleDragStart($event, el)"
-              @dragover.prevent="handleDragOver($event, el)"
-              @dragenter="handleDragEnter($event, el, index)"
-              @dragend="handleDragEnd($event, el)"
-            >
-              <td
-                :class="
-                  isEdit ? 'fundName-noclick align-left' : 'fundName align-left'
-                "
-                :title="el.name"
-                @click.stop="!isEdit && fundDetail(el)"
-              >
-                <div>{{ el.name }}</div>
-                <p>{{ el.fundcode }}</p>
-              </td>
-              <td :class="el.costGains >= 0 ? 'up' : 'down'">
-                <div>{{ el.cost > 0 ? el.costGainsRate + "%" : "" }}</div>
-                <p>
-                  {{
-                  parseFloat(el.costGains).toLocaleString("zh", {
-                    minimumFractionDigits: 2,
-                  })
-                }}
-                </p>
-              </td>
-              <td :class="el.gszzl >= 0 ? 'up' : 'down'">
-                <div>{{ el.gszzl }}%</div>
-                <p>
-                  {{
-                    parseFloat(el.gains).toLocaleString("zh", {
-                      minimumFractionDigits: 2,
-                    })
-                  }}
-                </p>
-              </td>
-            </tr>
-          </tbody>
-        </table> -->
       </div>
     </div>
     <p v-if="isEdit" class="tips">
@@ -406,14 +344,6 @@
         @click="isEdit = !isEdit"
       />
       <input class="btn" type="button" value="设置" @click="option" />
-      <input class="btn" type="button" value="日志" @click="changelog" />
-      <input
-        class="btn primary"
-        type="button"
-        title="φ(>ω<*)"
-        value="打赏"
-        @click="reward"
-      />
     </div>
     <div class="input-row" v-if="showCost || showGains">
       <input
@@ -472,22 +402,13 @@
       :darkMode="darkMode"
       ref="fundDetail"
     ></fund-detail>
-    <reward @close="rewardShadow = false" ref="reward"></reward>
-    <change-log
-      @close="closeChangelog"
-      :darkMode="darkMode"
-      ref="changelog"
-      :top="30"
-    ></change-log>
   </div>
 </template>
 
 <script>
 const { version } = require("../../package.json");
-import reward from "../common/reward";
 import indDetail from "../common/indDetail";
 import fundDetail from "../common/fundDetail";
-import changeLog from "../common/changeLog";
 import market from "../common/market";
 //防抖
 let timeout = null;
@@ -498,10 +419,8 @@ function debounce(fn, wait = 700) {
 
 export default {
   components: {
-    reward,
     fundDetail,
     indDetail,
-    changeLog,
     market,
   },
   data() {
@@ -829,11 +748,6 @@ export default {
           this.getIndFundData();
           this.getData();
           this.checkInterval(true);
-
-          let ver = res.version ? res.version : "1.0.0";
-          if (ver != this.localVersion) {
-            this.changelog();
-          }
         }
       );
     },
@@ -917,20 +831,6 @@ export default {
 
     option() {
       chrome.tabs.create({ url: "/options/options.html" });
-    },
-    reward() {
-      this.rewardShadow = true;
-      this.$refs.reward.init();
-    },
-    changelog() {
-      this.changelogShadow = true;
-      this.$refs.changelog.init();
-    },
-    closeChangelog() {
-      this.changelogShadow = false;
-      chrome.storage.sync.set({
-        version: this.localVersion,
-      });
     },
     sortList(type) {
       for (const key in this.sortType) {
@@ -1024,7 +924,8 @@ export default {
         this.indFundData = res.data.data.diff;
       });
     },
-    getData(type) {
+    // 远程获取数据
+    async getData(type) {
       let fundlist = this.fundListM.map((val) => val.code).join(",");
       let url =
         "https://fundmobapi.eastmoney.com/FundMNewApi/FundMNFInfo?pageIndex=1&pageSize=200&plat=Android&appType=ttjj&product=EFund&Version=1&deviceid=" +
@@ -1360,8 +1261,8 @@ export default {
   box-sizing: border-box;
   position: relative;
   font-size: 12px;
-  font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB",
-    "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+  font-family: "emoji";
+  -webkit-font-smoothing: antialiased;
 }
 
 .refresh {
@@ -1727,15 +1628,15 @@ tbody tr:hover {
     border: 1px solid rgba($color: #409eff, $alpha: 0.6);
     background-color: rgba($color: #409eff, $alpha: 0.6);
   }
-  /deep/ .el-input__inner {
+  ::v-deep .el-input__inner {
     background-color: rgba($color: #ffffff, $alpha: 0.16);
     color: rgba($color: #ffffff, $alpha: 0.6);
   }
-  /deep/ .el-select__input {
+  ::v-deep .el-select__input {
     color: rgba($color: #ffffff, $alpha: 0.6);
   }
 
-  /deep/ tbody tr:hover {
+  ::v-deep tbody tr:hover {
     background-color: rgba($color: #ffffff, $alpha: 0.12);
   }
 
@@ -1773,16 +1674,16 @@ tbody tr:hover {
     color: rgba($color: #ffffff, $alpha: 0.38);
   }
 
-  /deep/ .el-select .el-input.is-focus .el-input__inner {
+  ::v-deep .el-select .el-input.is-focus .el-input__inner {
     border-color: rgba($color: #409eff, $alpha: 0.6);
   }
 
-  /deep/ .el-select .el-tag {
+  ::v-deep .el-select .el-tag {
     background-color: rgba($color: #ffffff, $alpha: 0.14);
     color: rgba($color: #ffffff, $alpha: 0.6);
   }
 
-  /deep/ .el-select-dropdown {
+  ::v-deep .el-select-dropdown {
     background-color: #383838;
     border: 1px solid rgba($color: #ffffff, $alpha: 0.38);
     .popper__arrow::after {
@@ -1808,14 +1709,14 @@ tbody tr:hover {
     }
   }
 
-  /deep/ .el-switch__label.is-active {
+  ::v-deep .el-switch__label.is-active {
     color: rgba($color: #409eff, $alpha: 0.87);
   }
-  /deep/ .el-switch__label {
+  ::v-deep .el-switch__label {
     color: rgba($color: #ffffff, $alpha: 0.6);
   }
 
-  /deep/ .hasReplace-tip {
+  ::v-deep .hasReplace-tip {
     color: rgba($color: #ffffff, $alpha: 0.6);
     border: 1px solid rgba($color: #409eff, $alpha: 0.6);
     background-color: rgba($color: #409eff, $alpha: 0.6);
